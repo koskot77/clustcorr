@@ -7,6 +7,13 @@
 #include"quicksort.h"
 #include"unionfind.h"
 
+// for stand-alone usage in R:
+// g++ -Wl,--no-as-needed -g -Wall -std=c++11 -c -fPIC *.cc
+// R CMD SHLIB -o correlator.so *.o -lstdc++ -lpthread
+// R
+// dyn.load("correlator.so")
+
+
 size_t nCores = 1;
 
 // global copy of the pointer to input matrix
