@@ -1,9 +1,9 @@
 Package: clustcorr
 Type: Package
-Title: Correlates pairs of vectors and cluster the alike together
+Title: Correlate and Cluster
 Version: 1.0
 Date: 2016-03-30
 Author: Khristian Kotov
 Maintainer: Khristian Kotov <koskot77@hotmail.com>
-Description: More about what it does (maybe more than one line)
-License: GPL >= 2.0
+Description: Correlates pairs of vectors and cluster the alike together.
+License: GPL (>= 2)

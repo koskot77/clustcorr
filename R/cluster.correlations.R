@@ -1,4 +1,4 @@
-cluster.correlations <- function(matr,cutoff){
-    d <- dim(matr);
-    .C("clusterCorrelations",as.integer(d),as.numeric(t(matr)),as.numeric(cutoff),clust=integer(d[1]))$clust
+cluster.correlations <- function(m,cutoff){
+    d <- dim(m);
+    .C("clusterCorrelations",as.integer(d),as.numeric(t(m)),as.numeric(cutoff),clust=integer(d[1]))$clust
 }

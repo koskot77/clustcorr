@@ -12,7 +12,7 @@
 // R CMD SHLIB -o correlator.so *.o -lstdc++ -lpthread
 // R
 // dyn.load("correlator.so")
-
+// source("../R/cluster.correlations.R")
 
 size_t nCores = 1;
 
@@ -34,7 +34,7 @@ void cleanUp(void){
     if( cachedSd     ){ delete [] cachedSd;     cachedSd     = 0; }
     if( indices      ){ delete [] indices;      indices      = 0; }
 }
-
+void setCores(int *n){ nCores = *n; }
 }
 
 void computeBlockOfCorrelations(unsigned long long begin, unsigned long long end){

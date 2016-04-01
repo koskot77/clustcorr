@@ -9,7 +9,7 @@ Enables multithreading
 (the default is one).
 }
 \usage{
-setcores(4)
+setcores(n)
 }
 %- maybe also 'usage' for other objects documented here.
 %\details{
