@@ -1,1 +1,1 @@
-cleanup <- function(){ .C("cleanup") }
+cleanup <- function(){ .C("cleanUp") }
