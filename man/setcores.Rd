@@ -11,6 +11,10 @@ Enables multithreading
 \usage{
 setcores(n)
 }
+\arguments{
+  \item{n}{
+    maximum number of threads to run 
+}}
 %- maybe also 'usage' for other objects documented here.
 %\details{
 %}
