@@ -120,7 +120,7 @@ void splitQuickSort(float *array, unsigned long long *payload, unsigned long lon
             subarray  [ 2*subtask+1 + subTasksAtThisDepth ] = subarray  [ subtask + subTasksSeen ] + pos;
             subpayload[ 2*subtask+0 + subTasksAtThisDepth ] = subpayload[ subtask + subTasksSeen ];
             subpayload[ 2*subtask+1 + subTasksAtThisDepth ] = subpayload[ subtask + subTasksSeen ] + pos;
-            sublength [ 2*subtask+0 + subTasksAtThisDepth ] = pos-1;
+            sublength [ 2*subtask+0 + subTasksAtThisDepth ] = pos;
             sublength [ 2*subtask+1 + subTasksAtThisDepth ] = sublength [ subtask + subTasksSeen ] - pos;
         }
     }
