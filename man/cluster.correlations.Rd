@@ -2,67 +2,50 @@
 \alias{cluster.correlations}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-  ~~function to do ... ~~
+Groups correlated vectors in clusters
 }
 \description{
-  ~~ A concise (1-5 lines) description of what the function does. ~~
+Compute all pairs correlations for the input vectors and cluster them for
+a given threshold.
 }
 \usage{
-cluster.correlations(matrix, cutoff)
+cluster.correlations(m, cutoff)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{matrix}{
-     ~~Describe \code{matrix} here~~
+  \item{m}{
+     a set of equal-sized vectors in rows of matrix \code{m}
 }
   \item{cutoff}{
-     ~~Describe \code{cutoff} here~~
+     correlation threshold at which clustering is performed (analogous to \code{h} in \code{cutree})
 }
 }
-\details{
-  ~~ If necessary, more details than the description above ~~
-}
+%\details{
+%  ~~ If necessary, more details than the description above ~~
+%}
 \value{
-  ~Describe the value returned
-  If it is a LIST, use
-  \item{comp1 }{Description of 'comp1'}
-  \item{comp2 }{Description of 'comp2'}
-%% ...
+  Returns an input-sized vector labeling the input vectors with cluster numbers.
+  These labels index input vectors that seeded the clustering (they have no deep meaning).
 }
-\references{
- ~put references to the literature/web site here ~
-}
+%\references{
+%}
 \author{
-  ~~who you are~~
+Khristian Kotov
 }
-\note{
-  ~~further notes~~
-}
-
- ~Make other sections like Warning with \section{Warning }{....} ~
+%\note{
+%}
 
 \seealso{
- ~~objects to See Also as \code{\link{help}}, ~~~
+ \code{\link{setcores}}, \code{\link{cleanup}}, \code{\link{dist}}, \code{\link{hclust}}
 }
 \examples{
-print(1)
-
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
-
-## The function is currently defined as
-#function (matrix, cutoff) 
-#{
-#    d <- dim(matrix)
-#    cl = .C("clusterCorrelation", as.integer(d), as.numeric(matrix), 
-#        as.numeric(cutoff), clust = integer(d[1]))$clust
-#    clustering = vector(mode = "integer", length = d[1])
-#    clustering[1:d[1]] <- cl[1:d[1]]
-#    return(clustering)
-#  }
+sample <- matrix( rnorm(1000), ncol=100 )
+setcores(4)
+cl <- cluster.correlations(sample,0.5)
+unique(cl)
+cl <- cluster.correlations(sample,0.1)
+unique(cl)
+cleanup()
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
+%\keyword{ ~kwd1 }
+%\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line

@@ -2,59 +2,39 @@
 \alias{cleanup}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-  ~~function to do ... ~~
+Release memory allocated in cluster.correlations
 }
 \description{
-  ~~ A concise (1-5 lines) description of what the function does. ~~
+\code{cleanup} deletes matrix of all pairs correlations calculated
+in \code{cluster.correlations} that is quadratic in size of its' input.
+While this matrix is still stored in the memory, one can cheaply
+recluster the input vectors with a different cutoff threshold.
+Calling \code{cluster.correlations} on a different input will
+automatically delete the old matrix.
 }
 \usage{
 cleanup()
 }
 %- maybe also 'usage' for other objects documented here.
-\details{
-  ~~ If necessary, more details than the description above ~~
-}
+%\details{
+%}
 \value{
-  ~Describe the value returned
-  If it is a LIST, use
-  \item{comp1 }{Description of 'comp1'}
-  \item{comp2 }{Description of 'comp2'}
-%% ...
+Always returns NULL
 }
-\references{
- ~put references to the literature/web site here ~
-}
+%\references{
+%}
 \author{
-  ~~who you are~~
+Khristian Kotov
 }
-\note{
-  ~~further notes~~
-}
-
- ~Make other sections like Warning with \section{Warning }{....} ~
+%\note{
+%  ~~further notes~~
+%}
 
 \seealso{
- ~~objects to See Also as \code{\link{help}}, ~~~
+cluster.correlations, setcores
 }
 \examples{
-print(1)
-
-##---- Should be DIRECTLY executable !! ----
-##-- ==>  Define data, use random,
-##--	or do  help(data=index)  for the standard data sets.
-
-## The function is currently defined as
-#function (matrix, cutoff) 
-#{
-#    d <- dim(matrix)
-#    cl = .C("clusterCorrelation", as.integer(d), as.numeric(matrix), 
-#        as.numeric(cutoff), clust = integer(d[1]))$clust
-#    clustering = vector(mode = "integer", length = d[1])
-#    clustering[1:d[1]] <- cl[1:d[1]]
-#    return(clustering)
-#  }
+sample <- matrix( rnorm(1000), ncol=100 )
+cluster.correlations(sample,0.5)
+cleanup()
 }
-% Add one or more standard keywords, see file 'KEYWORDS' in the
-% R documentation directory.
-\keyword{ ~kwd1 }
-\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
