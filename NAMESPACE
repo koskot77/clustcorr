@@ -1,3 +1,4 @@
 useDynLib(clustcorr)
 export(cluster.correlations)
 export(cleanup)
+export(setcores)
