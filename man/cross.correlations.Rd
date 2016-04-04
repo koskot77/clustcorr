@@ -39,6 +39,7 @@ sample2 <- matrix( rnorm(1000), ncol=100 )
 setcores(4)
 cl <- cross.correlations(sample1,sample2)
 cl[[1]]
+cl[[2]]
 }
 %\keyword{ ~kwd1 }
 %\keyword{ ~kwd2 }% __ONLY ONE__ keyword per line
