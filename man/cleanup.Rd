@@ -31,7 +31,7 @@ Khristian Kotov
 %}
 
 \seealso{
-cluster.correlations, setcores
+cluster.correlations, recluster.correlations, setcores, cross.correlations
 }
 \examples{
 sample <- matrix( rnorm(1000), ncol=100 )

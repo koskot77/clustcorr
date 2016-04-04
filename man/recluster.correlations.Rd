@@ -1,15 +1,15 @@
-\name{cluster.correlations}
-\alias{cluster.correlations}
+\name{recluster.correlations}
+\alias{recluster.correlations}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
 Groups correlated vectors in clusters
 }
 \description{
-Compute all pairs correlations for the input vectors and cluster them for
-a given threshold.
+Uses in-memory matrix of all pairs correlations previously computed with \code{cluster.correlations}
+and returns new clustering for a given new threshold
 }
 \usage{
-cluster.correlations(m, cutoff)
+recluster.correlations(m, cutoff)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -36,7 +36,7 @@ Khristian Kotov
 %}
 
 \seealso{
- \code{\link{setcores}}, \code{\link{cleanup}}, \code{\link{recluster.correlations}}, \code{\link{dist}}, \code{\link{hclust}}
+ \code{\link{setcores}}, \code{\link{cleanup}}, \code{\link{cluster.correlations}}, \code{\link{dist}}, \code{\link{hclust}}
 }
 \examples{
 sample <- matrix( rnorm(1000), ncol=100 )

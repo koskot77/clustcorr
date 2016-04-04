@@ -30,7 +30,7 @@ sample <- matrix( rnorm(1000), ncol=100 )
 setcores(4)
 cl <- cluster.correlations(sample,0.5) 
 unique(cl)
-cl <- cluster.correlations(sample,0.1) 
+cl <- recluster.correlations(sample,0.1) 
 unique(cl)
 cleanup()
 }
