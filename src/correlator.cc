@@ -247,7 +247,7 @@ void computeCrossCorrelationsAndSort(void){
 
 extern "C" {
 
-void crossCorrelations(int *dim1, double *inMatrix1,int *dim2, double *inMatrix2, double *cutoffDistance, int *outGrouping){
+void crossCorrelations(int *dim1, double *inMatrix1,int *dim2, double *inMatrix2, int *outGrouping){
 
     if( source1  != (const double**)inMatrix1 || nRows1 != size_t(dim1[0]) || nColumns1 != size_t(dim1[1]) ||
         source2  != (const double**)inMatrix2 || nRows2 != size_t(dim2[0]) || nColumns2 != size_t(dim2[1]) ){
@@ -272,9 +272,10 @@ void crossCorrelations(int *dim1, double *inMatrix1,int *dim2, double *inMatrix2
         unsigned long long index = indices[i];
         unsigned long row1  = (unsigned long)( index/nRows2 );
         unsigned long row2  = index - row1*nRows2;
-        if( -correlations[i] < *cutoffDistance ) break;
-        outGrouping12[row1] = row2+1;
-        outGrouping21[row2] = row1+1;
+        if( outGrouping12[row1] == 0 || outGrouping21[row2] == 0 ){
+            outGrouping12[row1] = row2+1;
+            outGrouping21[row2] = row1+1;
+        }
     }
 
 }
