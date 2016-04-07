@@ -38,10 +38,6 @@ void cleanUp(void){
     if( correlations ){ delete [] correlations; correlations = 0; }
     if( cachedMean   ){ delete [] cachedMean;   cachedMean   = 0; }
     if( cachedSd     ){ delete [] cachedSd;     cachedSd     = 0; }
-    if( cachedMean1  ){ delete [] cachedMean1;  cachedMean1  = 0; }
-    if( cachedSd1    ){ delete [] cachedSd1;    cachedSd1    = 0; }
-    if( cachedMean2  ){ delete [] cachedMean2;  cachedMean2  = 0; }
-    if( cachedSd2    ){ delete [] cachedSd2;    cachedSd2    = 0; }
     if( indices      ){ delete [] indices;      indices      = 0; }
 }
 void setCores(int *n){ nCores = *n; }
@@ -168,29 +164,59 @@ void reclusterCorrelations(double *cutoffDistance, int *outClustering){
 
 }
 
-void computeBlockOfCrossCorrelations(unsigned long long begin, unsigned long long end){
+void computeBlockOfCrossCorrelations12(unsigned long long begin, unsigned long long end, int *grouping12){
     const double (*series1)[nColumns1] = (const double (*)[nColumns1])source1;
     const double (*series2)[nColumns2] = (const double (*)[nColumns2])source2;
     size_t length = nColumns1; // for now assumed to be = nCulumns2
-    for(unsigned long long index=begin; index<end; index++){
+    for(unsigned int row1=begin; row1<end; row1++){
 
-        unsigned long row1  = (unsigned long)( index/nRows2 );
-        unsigned long row2  = index - row1*nRows2;
+        unsigned int bestMatchIndex = 0;
+        double       bestMatchValue = 10;
 
-        correlations[index] = -fabs( cor(series1[row1],cachedMean1[row1],cachedSd1[row1],
-                                         series2[row2],cachedMean2[row2],cachedSd2[row2], length ) );
+        for(unsigned int row2=0; row2<nRows2; row2++){
+            double correlation = -fabs( cor(series1[row1],cachedMean1[row1],cachedSd1[row1],
+                                            series2[row2],cachedMean2[row2],cachedSd2[row2], length ) );
+            if( correlation < bestMatchValue ){
+                bestMatchValue = correlation;
+                bestMatchIndex = row2;
+            }
+        }
+        grouping12[row1] = bestMatchIndex + 1; // +1 to be consistent with R indexing
     }
 }
 
-void computeCrossCorrelationsAndSort(void){
-    cleanUp();
+void computeBlockOfCrossCorrelations21(unsigned long long begin, unsigned long long end, int *grouping21){
+    const double (*series1)[nColumns1] = (const double (*)[nColumns1])source1;
+    const double (*series2)[nColumns2] = (const double (*)[nColumns2])source2;
+    size_t length = nColumns1; // for now assumed to be = nCulumns2
+    for(unsigned int row2=begin; row2<end; row2++){
 
-    // allocate space for all-with-all pair correlations 
-    correlations        = new  float  [nRows1*nRows2];
-    bzero(correlations, sizeof(float) *nRows1*nRows2);
+        unsigned int bestMatchIndex = 0;
+        double       bestMatchValue = 10;
+
+        for(unsigned int row1=0; row1<nRows1; row1++){
+            double correlation = -fabs( cor(series1[row1],cachedMean1[row1],cachedSd1[row1],
+                                            series2[row2],cachedMean2[row2],cachedSd2[row2], length ) );
+            if( correlation < bestMatchValue ){
+                bestMatchValue = correlation;
+                bestMatchIndex = row1;
+            }
+        }
+
+        grouping21[row2] = bestMatchIndex + 1; // +1 to be consistent with R indexing
+    }
+}
+
+
+void computeBestCrossCorrelations(int *grouping12, int *grouping21){
 
     double (*series1)[nColumns1] = (double (*)[nColumns1])(source1);
     double (*series2)[nColumns2] = (double (*)[nColumns2])(source2);
+
+    if( cachedMean1  ){ delete [] cachedMean1;  cachedMean1  = 0; }
+    if( cachedSd1    ){ delete [] cachedSd1;    cachedSd1    = 0; }
+    if( cachedMean2  ){ delete [] cachedMean2;  cachedMean2  = 0; }
+    if( cachedSd2    ){ delete [] cachedSd2;    cachedSd2    = 0; }
 
     // caching means and sds
     cachedMean1 = new double [nRows1];
@@ -212,8 +238,10 @@ void computeCrossCorrelationsAndSort(void){
     printf("Correlating all in one with all in another\n");
     const size_t maxNumThreads = nCores;
     std::future<void> results [ maxNumThreads ];
-    const unsigned long long maxIndex  =  nRows1*nRows2;
-    const unsigned int       maxBlocks = (nRows1>100 && nRows2>100 ? 100 : 1);
+
+    // correlate first with the second
+    unsigned long long maxIndex  =  nRows1;
+    unsigned int       maxBlocks = (nRows1>100 ? 100 : 1);
     for(unsigned int block=0; block<maxBlocks; block++){
         unsigned long long begin =  block    * maxIndex / maxBlocks ;
         unsigned long long   end = (block+1) * maxIndex / maxBlocks ;
@@ -225,64 +253,60 @@ void computeCrossCorrelationsAndSort(void){
             if( freeThread == maxNumThreads-1 ) freeThread = 0; else freeThread++;
 
         // submit
-        results[freeThread] = std::async(std::launch::async, computeBlockOfCrossCorrelations, begin, end);
+        results[freeThread] = std::async(std::launch::async, computeBlockOfCrossCorrelations12, begin, end, grouping12);
         printf("  finished  block %d/%d in thread %ld\n",block,maxBlocks,freeThread);
     }
-    printf("  finalizing ... \n");
+    printf("  finalizing12 ... \n");
 
     // wait until all threads finish
     for(size_t thr=0; thr<maxNumThreads; thr++)
         if( results[thr].valid() ) results[thr].wait();
 
-    /// Beginning of the sorting step
 
-    // keep track of original indices while sorting
-    indices = new unsigned long long [nRows1*nRows2];
-    for(unsigned long long i=0; i<nRows1*nRows2; i++) indices[i] = i;
+    // correlate second with the first 
+    maxIndex  =  nRows2;
+    maxBlocks = (nRows2>100 ? 100 : 1);
+    for(unsigned int block=0; block<maxBlocks; block++){
+        unsigned long long begin =  block    * maxIndex / maxBlocks ;
+        unsigned long long   end = (block+1) * maxIndex / maxBlocks ;
 
-    printf("Sorting\n");
-    unsigned long long size = nRows1*nRows2;
-    splitQuickSort( correlations, indices, size );
+        // identify a free thread
+        size_t freeThread = 0;
+        for( ;  results[freeThread].valid() &&
+                results[freeThread].wait_for(std::chrono::milliseconds(100)) != std::future_status::ready ; )
+            if( freeThread == maxNumThreads-1 ) freeThread = 0; else freeThread++;
+
+        // submit
+        results[freeThread] = std::async(std::launch::async, computeBlockOfCrossCorrelations21, begin, end, grouping21);
+        printf("  finished  block %d/%d in thread %ld\n",block,maxBlocks,freeThread);
+    }
+    printf("  finalizing21 ... \n");
+
+    // wait until all threads finish
+    for(size_t thr=0; thr<maxNumThreads; thr++)
+        if( results[thr].valid() ) results[thr].wait();
+
 }
 
 extern "C" {
 
 void crossCorrelations(int *dim1, double *inMatrix1,int *dim2, double *inMatrix2, int *outGrouping){
 
-    if( source1  != (const double**)inMatrix1 || nRows1 != size_t(dim1[0]) || nColumns1 != size_t(dim1[1]) ||
-        source2  != (const double**)inMatrix2 || nRows2 != size_t(dim2[0]) || nColumns2 != size_t(dim2[1]) ){
-        source1   = (const double**)inMatrix1;
-        source2   = (const double**)inMatrix2;
-        nRows1   = dim1[0];
-        nColumns1= dim1[1];
-        nRows2   = dim2[0];
-        nColumns2= dim2[1];
-        if( nColumns1 != nColumns2 ){
-            printf("Windowing is not implemented\n");
-            return;
-        }
-        computeCrossCorrelationsAndSort();
+    source1   = (const double**)inMatrix1;
+    source2   = (const double**)inMatrix2;
+    nRows1   = dim1[0];
+    nColumns1= dim1[1];
+    nRows2   = dim2[0];
+    nColumns2= dim2[1];
+    if( nColumns1 != nColumns2 ){
+        printf("Windowing is not implemented\n");
+        return;
     }
 
     int *outGrouping12 = outGrouping;
     int *outGrouping21 = outGrouping + nRows1;
 
-    printf("Groping\n");
-    for(unsigned long long i=0; i<nRows1*nRows2; i++){
-        unsigned long long index = indices[i];
-        unsigned long row1  = (unsigned long)( index/nRows2 );
-        unsigned long row2  = index - row1*nRows2;
-        if( outGrouping12[row1] == 0 && outGrouping21[row2] == 0 ){
-            outGrouping12[row1] = row2+1;
-            outGrouping21[row2] = row1+1;
-        } else {
-            if( outGrouping12[row1] == 0 && outGrouping21[row2] != 0 )
-                outGrouping12[row1] = row2+1;
-
-            if( outGrouping12[row1] != 0 && outGrouping21[row2] == 0 )
-                outGrouping21[row2] = row1+1;
-        }
-    }
+    computeBestCrossCorrelations(outGrouping12,outGrouping21);
 
 }
 
