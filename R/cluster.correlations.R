@@ -6,7 +6,8 @@ cluster.correlations <- function(m,cutoff){
     colnames(df) <- c("cl","ind")
     clustering <- aggregate( df, by=list(Index=df$cl), function(x){x} )
     bigfirst  <- c(1)
-    if( dim(clustering[,3])[1] != 1 )
+    if( dim(clustering)[1] != 1 ){
         bigfirst <- order( unlist( lapply(clustering[,3],length) ), decreasing = T )
+    }
     return(clustering[bigfirst,3])
 }
