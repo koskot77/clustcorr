@@ -6,26 +6,29 @@ Groups correlated vectors in clusters
 }
 \description{
 Uses in-memory matrix of all pairs correlations previously computed with \code{cluster.correlations}
-and returns new clustering for a given new threshold
+and returns new clustering for a given new threshold or number of clusters
 }
 \usage{
-recluster.correlations(m, cutoff)
+recluster.correlations(m, cutoff=0, nclust=0)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{m}{
      a set of equal-sized vectors in rows of matrix \code{m}
-}
+  }
   \item{cutoff}{
      correlation threshold at which clustering is performed (analogous to \code{h} in \code{cutree})
-}
+  }
+  \item{nclust}{
+     intended number of clusters
+  }
 }
 %\details{
 %  ~~ If necessary, more details than the description above ~~
 %}
 \value{
-  Returns an input-sized vector labeling the input vectors with cluster numbers.
-  These labels index input vectors that seeded the clustering (they have no deep meaning).
+  Returns a list of clusters ordered by size in decreasing order. Each cluster is a list of
+  indices of the input vectors, merged into this cluster.
 }
 %\references{
 %}
@@ -41,10 +44,20 @@ Khristian Kotov
 \examples{
 sample <- matrix( rnorm(1000), ncol=100 )
 setcores(4)
+
+# let's see how many clusters we get at 0.5 correlation threshold
 cl <- cluster.correlations(sample,0.5)
-unique(cl)
-cl <- recluster.correlations(sample,0.1)
-unique(cl)
+length(cl)
+
+# recluster with another threshold
+cl <- recluster.correlations(sample,cutoff=0.1)
+length(cl)
+
+# recluster with into specific number of clusters
+cl <- recluster.correlations(sample,nclust=3)
+print(cl)
+
+# don't forget to release the memory if you don't plan to recluster the data again
 cleanup()
 }
 %\keyword{ ~kwd1 }

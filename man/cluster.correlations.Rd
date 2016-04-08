@@ -15,17 +15,17 @@ cluster.correlations(m, cutoff)
 \arguments{
   \item{m}{
      a set of equal-sized vectors in rows of matrix \code{m}
-}
+  }
   \item{cutoff}{
      correlation threshold at which clustering is performed (analogous to \code{h} in \code{cutree})
-}
+  }
 }
 %\details{
 %  ~~ If necessary, more details than the description above ~~
 %}
 \value{
-  Returns an input-sized vector labeling the input vectors with cluster numbers.
-  These labels index input vectors that seeded the clustering (they have no deep meaning).
+  Returns a list of clusters ordered by size in decreasing order. Each cluster is a list of
+  indices of the input vectors, merged into this cluster.
 }
 %\references{
 %}
@@ -41,10 +41,16 @@ Khristian Kotov
 \examples{
 sample <- matrix( rnorm(1000), ncol=100 )
 setcores(4)
+
+# let's see how many clusters we get at 0.5 correlation threshold
 cl <- cluster.correlations(sample,0.5)
-unique(cl)
+length(cl)
+
+# recluster with another threshold
 cl <- recluster.correlations(sample,0.1)
-unique(cl)
+length(cl)
+
+# don't forget to release the memory if you don't plan to recluster the data again
 cleanup()
 }
 %\keyword{ ~kwd1 }
