@@ -139,7 +139,7 @@ void clusterCorrelations(int *dim, double *inMatrix, double *cutoffDistance, int
 
 }
 
-void reclusterCorrelations(double *cutoffDistance, int *outClustering){
+void reclusterCorrelationsAtCutoff(double *cutoffDistance, int *outClustering){
     if( !source ){
         printf("Clustering not yet done, nothing to recluster\n");
         return;
@@ -151,6 +151,28 @@ void reclusterCorrelations(double *cutoffDistance, int *outClustering){
         unsigned long row1  = (unsigned long)( (1+sqrt(1+8*index))/2 );
         unsigned long row2  = index - row1*(row1-1)/2;
         if( -correlations[i] < *cutoffDistance ) break;
+        int node1 = row1+1;
+        int node2 = row2+1;
+        int cluster1 = uf.findCluster(node1);
+        int cluster2 = uf.findCluster(node2);
+        if( cluster1 != cluster2 ) uf.joinClusters(cluster1,cluster2);
+    }
+
+    for(unsigned int row=0; row<nRows; row++)
+        outClustering[row] = uf.findCluster(row+1);
+}
+
+void reclusterCorrelationsForNclust(int *nclust, int *outClustering){
+    if( !source ){
+        printf("Clustering not yet done, nothing to recluster\n");
+        return;
+    }
+
+    UnionFind uf(nRows);
+    for(unsigned long long i=0; i<nRows*(nRows-1)/2 && uf.nClusters() > *nclust; i++){
+        unsigned long long index = indices[i];
+        unsigned long row1  = (unsigned long)( (1+sqrt(1+8*index))/2 );
+        unsigned long row2  = index - row1*(row1-1)/2;
         int node1 = row1+1;
         int node2 = row2+1;
         int cluster1 = uf.findCluster(node1);
